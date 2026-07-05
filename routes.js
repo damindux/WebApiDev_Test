@@ -40,7 +40,27 @@ export default function registerRoutes(app) {
 	app.get("/vehicles/:vehicleId", (req, res) => {
 		const vehicle = data.vehicles.find((v) => v.id === Number(req.params.vehicleId));
 		if (!vehicle) return res.status(404).json({ error: "Vehicle not found" });
-		res.json(vehicle);
+
+		const pings = data.pings
+			.filter((p) => p.vehicle_id === vehicle.id)
+			.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+		const lastPing = pings.length > 0 ? {
+			ping_id: pings[0].id,
+			vehicle_id: pings[0].vehicle_id,
+			timestamp: pings[0].timestamp,
+			lat: pings[0].latitude,
+			lng: pings[0].longitude,
+			speed: pings[0].speed ?? 0,
+		} : null;
+
+		res.json({
+			vehicle_id: vehicle.id,
+			reg_number: vehicle.registration_number,
+			device_id: vehicle.device_id,
+			station_id: vehicle.station_id,
+			last_ping: lastPing,
+		});
 	});
 
 	app.get("/vehicles/:vehicleId/pings", (req, res) => {
