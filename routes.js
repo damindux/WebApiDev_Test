@@ -69,4 +69,20 @@ export default function registerRoutes(app) {
 		const pings = data.pings.filter((p) => p.vehicle_id === vehicle.id);
 		res.json(pings);
 	});
+
+	app.get("/vehicles/:vehicleId/last-position", (req, res) => {
+		const pings = data.pings
+			.filter((p) => p.vehicle_id === Number(req.params.vehicleId))
+			.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+		if (pings.length === 0) return res.status(404).json({ error: "No pings found for this vehicle" });
+
+		res.json({
+			vehicle_id: pings[0].vehicle_id,
+			timestamp: pings[0].timestamp,
+			lat: pings[0].latitude,
+			lng: pings[0].longitude,
+			speed: pings[0].speed ?? 0,
+		});
+	});
 }
