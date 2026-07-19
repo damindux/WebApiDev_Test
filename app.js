@@ -20,23 +20,37 @@ if (!uri) {
 	process.exit(1);
 }
 
-const client = new MongoClient(uri);
+let client = null;
+let db = null;
 
-async function startServer() {
-	try {
-		await client.connect();
-		console.log("Connected to MongoDB successfully!");
-		const db = client.db();
-
-		registerRoutes(app, db);
-
-		app.listen(port, () => {
-			console.log(`Hello world app listening on port ${port}`);
-		});
-	} catch (err) {
-		console.error("Failed to connect to MongoDB", err);
-		process.exit(1);
+async function getDatabase() {
+	if (db) return db;
+	if (!client) {
+		client = new MongoClient(uri);
 	}
+	await client.connect();
+	db = client.db();
+	return db;
 }
 
-startServer();
+// Middleware to inject db into request objects
+app.use(async (req, res, next) => {
+	try {
+		req.db = await getDatabase();
+		next();
+	} catch (err) {
+		console.error("Failed to connect to MongoDB in request middleware:", err);
+		res.status(500).json({ error: "Database connection failed" });
+	}
+});
+
+registerRoutes(app);
+
+// Only listen if not running in Vercel's serverless environment
+if (!process.env.VERCEL) {
+	app.listen(port, () => {
+		console.log(`Hello world app listening on port ${port}`);
+	});
+}
+
+export default app;

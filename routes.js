@@ -1,6 +1,7 @@
-export default function registerRoutes(app, db) {
+export default function registerRoutes(app) {
 	app.get("/provinces", async (req, res) => {
 		try {
+			const db = req.db;
 			const provinces = await db.collection("provinces").find({}, { projection: { _id: 0 } }).toArray();
 			res.json(provinces);
 		} catch (err) {
@@ -10,6 +11,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/provinces/:provinceId", async (req, res) => {
 		try {
+			const db = req.db;
 			const province = await db.collection("provinces").findOne(
 				{ id: Number(req.params.provinceId) },
 				{ projection: { _id: 0 } }
@@ -23,6 +25,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/districts", async (req, res) => {
 		try {
+			const db = req.db;
 			const districts = await db.collection("districts").find({}, { projection: { _id: 0 } }).toArray();
 			res.json(districts);
 		} catch (err) {
@@ -32,6 +35,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/districts/:districtId", async (req, res) => {
 		try {
+			const db = req.db;
 			const district = await db.collection("districts").findOne(
 				{ id: Number(req.params.districtId) },
 				{ projection: { _id: 0 } }
@@ -45,6 +49,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/stations", async (req, res) => {
 		try {
+			const db = req.db;
 			const stations = await db.collection("stations").find({}, { projection: { _id: 0 } }).toArray();
 			res.json(stations);
 		} catch (err) {
@@ -54,6 +59,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/stations/:stationId", async (req, res) => {
 		try {
+			const db = req.db;
 			const station = await db.collection("stations").findOne(
 				{ id: Number(req.params.stationId) },
 				{ projection: { _id: 0 } }
@@ -67,6 +73,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/vehicles", async (req, res) => {
 		try {
+			const db = req.db;
 			const vehicles = await db.collection("vehicles").find({}, { projection: { _id: 0 } }).toArray();
 			res.json(vehicles);
 		} catch (err) {
@@ -76,6 +83,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/vehicles/:vehicleId", async (req, res) => {
 		try {
+			const db = req.db;
 			const vehicleId = Number(req.params.vehicleId);
 			const vehicle = await db.collection("vehicles").findOne({ id: vehicleId }, { projection: { _id: 0 } });
 			if (!vehicle) return res.status(404).json({ error: "Vehicle not found" });
@@ -109,6 +117,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/vehicles/:vehicleId/pings", async (req, res) => {
 		try {
+			const db = req.db;
 			const vehicleId = Number(req.params.vehicleId);
 			const vehicle = await db.collection("vehicles").findOne({ id: vehicleId }, { projection: { _id: 0 } });
 			if (!vehicle) return res.status(404).json({ error: "Vehicle not found" });
@@ -122,6 +131,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/vehicles/:vehicleId/pings/:pingId", async (req, res) => {
 		try {
+			const db = req.db;
 			const vehicleId = Number(req.params.vehicleId);
 			const pingId = Number(req.params.pingId);
 			const vehicle = await db.collection("vehicles").findOne({ id: vehicleId }, { projection: { _id: 0 } });
@@ -141,6 +151,7 @@ export default function registerRoutes(app, db) {
 
 	app.post("/vehicles/:vehicleId/pings", async (req, res) => {
 		try {
+			const db = req.db;
 			const apiKey = req.headers["x-api-key"];
 			if (!apiKey) return res.status(401).json({ error: "X-API-Key header is required" });
 
@@ -193,6 +204,7 @@ export default function registerRoutes(app, db) {
 
 	app.get("/vehicles/:vehicleId/last-position", async (req, res) => {
 		try {
+			const db = req.db;
 			const vehicleId = Number(req.params.vehicleId);
 			const latestPings = await db.collection("pings")
 				.find({ vehicle_id: vehicleId })
