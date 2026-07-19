@@ -1,18 +1,22 @@
 import express from "express";
 import registerRoutes from "./routes.js";
-import { basicAuth } from "./auth.js";
+import registerAuthRoutes from "./routes/auth.js";
+import registerUserRoutes from "./routes/users.js";
+import { jwtAuth } from "./middleware/jwtAuth.js";
+import { requireRole } from "./middleware/requireRole.js";
+import { ALL_READ_ROLES } from "./lib/roles.js";
 import { MongoClient } from "mongodb";
 import "dotenv/config";
 
 const app = express();
 const port = 3000;
 
-app.use(express.json());
-app.use(basicAuth);
+if (!process.env.JWT_SECRET) {
+	console.error("JWT_SECRET is not defined in the environment variables (.env file).");
+	process.exit(1);
+}
 
-app.get("/", (req, res) => {
-	res.json({ status: "ok", session: "NB6007CEM S2" });
-});
+app.use(express.json());
 
 const uri = process.env.MONGODB_URI;
 if (!uri) {
@@ -33,7 +37,6 @@ async function getDatabase() {
 	return db;
 }
 
-// Middleware to inject db into request objects
 app.use(async (req, res, next) => {
 	try {
 		req.db = await getDatabase();
@@ -44,9 +47,22 @@ app.use(async (req, res, next) => {
 	}
 });
 
+app.get("/", jwtAuth, requireRole(...ALL_READ_ROLES), (req, res) => {
+	res.json({ status: "ok", user: req.user.username, role: req.user.role });
+});
+
+registerAuthRoutes(app);
+registerUserRoutes(app);
 registerRoutes(app);
 
-// Only listen if not running in Vercel's serverless environment
+export async function closeDatabase() {
+	if (client) {
+		await client.close();
+		client = null;
+		db = null;
+	}
+}
+
 if (!process.env.VERCEL) {
 	app.listen(port, () => {
 		console.log(`Hello world app listening on port ${port}`);
