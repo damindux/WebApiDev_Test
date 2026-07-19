@@ -1,11 +1,16 @@
 {
 	"type": "module",
 	"scripts": {
-		"start": "node app.js"
+		"start": "node app.js",
+		"seed:users": "node seed-users.js",
+		"test": "node tests/connection.test.js && node tests/crud.test.js && node --test tests/auth.test.js"
 	},
 	"dependencies": {
+		"bcryptjs": "^3.0.3",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
-		"mongodb": "^7.5.0"
+		"jsonwebtoken": "^9.0.3",
+		"mongodb": "^7.5.0",
+		"supertest": "^7.2.2"
 	}
 }
